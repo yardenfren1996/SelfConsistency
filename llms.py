@@ -138,7 +138,8 @@ class Paraphraser:
                 outputs = self.model.generate(
                     input_ids, temperature=temperature, repetition_penalty=repetition_penalty,
                     num_return_sequences=num_return_sequences, no_repeat_ngram_size=no_repeat_ngram_size,
-                    num_beams=num_beams, num_beam_groups=num_beam_groups, diversity_penalty=diversity_penalty
+                    num_beams=num_beams, num_beam_groups=num_beam_groups, diversity_penalty=diversity_penalty,
+                    max_new_tokens=100
                 )
 
                 res = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)

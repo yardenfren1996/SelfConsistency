@@ -117,7 +117,7 @@ class NgramSimilarityScore:
     def ngram_consistency_score(self, gen_i, gen_j):
         try:
             V_i, V_j = self.get_ngrams(gen_i), self.get_ngrams(gen_j)
-            return (1 / len(V_i.union(V_j))) * len(V_i.intersection(V_j))
+            return len(V_i.intersection(V_j)) / (len(V_i.union(V_j)) + 1e-9)
         except Exception as e:
             raise type(e)(f'failed to ngram_consistency_score, due to: {e}')
 
@@ -157,8 +157,6 @@ class NounNgramSimilarityScore(NgramSimilarityScore):
             tokenizer = get_tokenizer('basic_english')
             text = self.filter_non_nouns(text)
             tokens = tokenizer(text)
-            if self.N <= 0 or self.N > len(tokens):
-                raise ValueError("Invalid n-gram size")
             ngrams = []
 
             for i in range(len(tokens) - self.N + 1):

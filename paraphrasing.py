@@ -25,7 +25,6 @@ def parse_args():
 CONFIG = {'llama_2': {'cls': Llama_2, 'config': {'model_name': "meta-llama/Llama-2-7b-chat-hf"}},
           'paraphraser': {'cls': Paraphraser, 'config': {'model_name': "humarin/chatgpt_paraphraser_on_T5_base"}}}
 
-NUM_GENERATIONS = 5
 BATCH_SIZE = 1
 
 if __name__ == '__main__':
@@ -50,7 +49,7 @@ if __name__ == '__main__':
             for i, batch in enumerate(tqdm(data_loader)):
                 doc, sum, id = batch.values()
                 paragraphs = doc[0].strip().split('\n')
-                results[id[0]] = [LLM.paraphrase(sen, num_return_sequences=NUM_GENERATIONS) for sen in paragraphs]
+                results[id[0]] = [LLM.paraphrase(sen, num_return_sequences=args.no_generations) for sen in paragraphs]
                 if i % 25 == 0:
                     utils.save_results(results, args.results_filename)
 

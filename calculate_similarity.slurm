@@ -4,4 +4,4 @@
 #SBATCH --error=logs/sim.err
 #SBATCH --partition=studentbatch
 
-python simmilarity.py --model "noun_ngram" --data "results/pegasus_data_scores.pkl" --results_filename "pegasus_data_scores"
+python simmilarity.py --model "noun_ngram" --data "results/data/pegasus_data_scores.pkl" --results_filename "data/pegasus_data_scores"
