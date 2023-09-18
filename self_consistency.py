@@ -1,60 +1,70 @@
 import argparse
-import pickle
 
 import datasets
-from rouge_score import rouge_scorer
 import torch
 from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
-from transformers import PegasusForConditionalGeneration, PegasusTokenizer, AutoTokenizer, AutoModel
 
-from simmilarity import get_centroid, compute_rouge_score
+import utils
+from llms import Pegasus, Llama_2, Flan_T5
+
+CONFIG = {'pegasus': {'cls': Pegasus, 'config': {'model_name': "google/pegasus-xsum"}},
+          'llama_2': {'cls': Llama_2, 'config': {'model_name': "meta-llama/Llama-2-7b-chat-hf"}},
+          'flan_t5': {'cls': Flan_T5, 'config': {'model_name': "google/flan-t5-xl"}}}
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--model", type=str, help="The model to use.")
     parser.add_argument("--dataset", type=str, default='xsum', help="The dataset to use.")
     parser.add_argument("--results_filename", type=str, default='ours', help="Desired name for the output file.")
     parser.add_argument("--from_index", type=int, default=0, help="Start index of the dataset.")
     parser.add_argument("--to_index", type=int, default=-1, help="End index of the dataset.")
+    parser.add_argument("--no_generations", type=int, default=10, help="number of generations per sentence.")
+    parser.add_argument("--no_seeds", type=int, default=5, help="number of seeds per document.")
     args = parser.parse_args()
     return args
 
 
+BATCH_SIZE = 1
 if __name__ == '__main__':
     args = parse_args()
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    NUMBER_OF_GENERATIONS = 25
-    BATCH_SIZE = 1
-
+    # Load dataset
     dataset = datasets.load_dataset(args.dataset, split='test', cache_dir='./data')
-    subset_indices = list(range(args.from_index, args.to_index))
+
+    subset_indices = list(range(args.from_index, args.to_index)) if args.to_index > 0 else list(
+        range(args.from_index, len(dataset)))
     sub_dataset = Subset(dataset, subset_indices)
     del subset_indices
 
-    model_name = "google/pegasus-xsum"
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    tokenizer = PegasusTokenizer.from_pretrained(model_name, cache_dir='./models')
-    model = PegasusForConditionalGeneration.from_pretrained(model_name, cache_dir='./models').to(device)
+    # Load model
+    cls, config = CONFIG[args.model].values()
+    config['device'] = device
+    LLM = cls(**config)
 
-    bert_tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/bert-base-nli-mean-tokens',
-                                                   cache_dir='./models')
-    bert_model = AutoModel.from_pretrained('sentence-transformers/bert-base-nli-mean-tokens', cache_dir='./models')
-    scorer = rouge_scorer.RougeScorer(['rouge2'])
     data_loader = DataLoader(sub_dataset, batch_size=BATCH_SIZE)
 
+    print(f'Running self consistency on {len(sub_dataset)} samples.')
+    print(f'From index: {args.from_index}, To index: {args.to_index}')
+    # results = utils.load_results(f'results/{args.results_filename}.pkl')
     results = {}
-    with torch.no_grad():
-        for batch in tqdm(data_loader):
-            doc, sum, id = batch.values()
-            batch = tokenizer(doc, truncation=True, padding="longest", return_tensors="pt").to(device)
-            translated = model.generate(**batch, num_return_sequences=NUMBER_OF_GENERATIONS,
-                                        num_beams=NUMBER_OF_GENERATIONS,
-                                        do_sample=True)
-            tgt_text = tokenizer.batch_decode(translated, skip_special_tokens=True)
-            result = get_centroid(bert_model, bert_tokenizer, tgt_text)
-            rogue_2_score = compute_rouge_score(scorer, result, sum[0])
-            results[id[0]] = rogue_2_score
+    try:
+        with torch.no_grad():
+            for i, batch in enumerate(tqdm(data_loader)):
+                doc, sum, id = batch.values()
+                # if id[0] in results:
+                #     continue
+                # if id[0] in ['12620805', '26075127', '27667106', '19226042', '34790102', '33548728','24145324','33240318']:
+                #     continue
+                outputs = LLM.summarize(document=doc, no_generations=args.no_generations, no_seeds=args.no_seeds)
+                data = {'outputs': outputs}
+                results[id[0]] = data
+                if i % 25 == 0:
+                    utils.save_results(results, args.results_filename)
+    except Exception as e:
+        utils.save_results(results, args.results_filename)
+        raise type(e)(f'failed to self consistency with id {id[0]}, due to: {e}')
 
-    with open(f'results/distributed/{args.results_filename}.pkl', "wb") as pickle_file:
-        pickle.dump(results, pickle_file)
+    utils.save_results(results, args.results_filename)
