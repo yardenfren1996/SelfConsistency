@@ -25,8 +25,6 @@ def parse_args():
     return args
 
 
-# TODO: Add whether I run self_consistency or paraphrasing !! in the args !
-
 def main():
     try:
         args = parse_args()
