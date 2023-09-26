@@ -36,9 +36,9 @@ def main():
             # if batch_num not in [2, 4, 6]:
             #     continue
             if args.method_type == 'self_consistency':
-                ex_line = 'python self_consistency.py --model {args.model} --dataset {args.dataset} --from_index {start_idx} --to_index {end_idx} --results_filename "distributed/{args.results_filename}_{batch_num}" --no_generations {args.no_generations} --no_seeds {args.no_seeds}'
+                ex_line = f'python self_consistency.py --model {args.model} --dataset {args.dataset} --from_index {start_idx} --to_index {end_idx} --results_filename "distributed/{args.results_filename}_{batch_num}" --no_generations {args.no_generations} --no_seeds {args.no_seeds}'
             elif args.method_type == 'paraphrasing':
-                ex_line = 'python paraphrasing.py --model {args.model} --dataset {args.dataset} --from_index {start_idx} --to_index {end_idx} --results_filename "distributed/{args.results_filename}_{batch_num}" --no_generations {args.no_generations}'
+                ex_line = f'python paraphrasing.py --model {args.model} --dataset {args.dataset} --from_index {start_idx} --to_index {end_idx} --results_filename "distributed/{args.results_filename}_{batch_num}" --no_generations {args.no_generations}'
             else:
                 raise ValueError("Method type is not supported, can be one of the following: self consistency / paraphrasing.")
             sbatch_script = f"""#! /bin/sh
