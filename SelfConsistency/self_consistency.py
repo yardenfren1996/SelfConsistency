@@ -5,8 +5,8 @@ import torch
 from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
 
-import utils
-from llms import Pegasus, Llama_2, Flan_T5
+from SelfConsistency.llms import Pegasus, Llama_2, Flan_T5
+from SelfConsistency import utils
 
 CONFIG = {'pegasus': {'cls': Pegasus, 'config': {'model_name': "google/pegasus-xsum"}},
           'llama_2': {'cls': Llama_2, 'config': {'model_name': "meta-llama/Llama-2-7b-chat-hf"}},

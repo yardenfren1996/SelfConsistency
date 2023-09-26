@@ -13,7 +13,7 @@ from torchtext.data.utils import get_tokenizer
 from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModel
 
-import utils
+from SelfConsistency import utils
 
 nltk.download('punkt')
 

@@ -4,9 +4,9 @@ import datasets
 import torch
 from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
-from llms import Llama_2, Paraphraser
 
-import utils
+from SelfConsistency.llms import Llama_2, Paraphraser
+from SelfConsistency import utils
 
 
 def parse_args():

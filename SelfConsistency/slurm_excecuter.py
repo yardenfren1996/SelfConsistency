@@ -3,7 +3,7 @@ import subprocess
 
 import datasets
 
-import utils
+from SelfConsistency import utils
 
 
 def parse_args():
