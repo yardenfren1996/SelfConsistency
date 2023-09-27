@@ -62,6 +62,10 @@ def create_paraphrase_on_dataset(open_ai_api_key, subset=False):
 
         except Exception as e:
             print(f"On doc {idx}, exception: {e}")
+
+    with open(f'{results_filename}.pkl', "wb") as pickle_file:
+        pickle.dump(paraphrased_docs, pickle_file)
+
     return paraphrased_docs
 
 
