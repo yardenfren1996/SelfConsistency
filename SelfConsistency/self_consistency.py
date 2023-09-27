@@ -5,13 +5,9 @@ import torch
 from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
 
-from SelfConsistency.llms import Pegasus, Llama_2, Flan_T5
 from SelfConsistency import utils
+from SelfConsistency.constants import SUMMARY_MODEL_CONFIG
 
-CONFIG = {'pegasus': {'cls': Pegasus, 'config': {'model_name': "google/pegasus-xsum"}},
-          'llama_2': {'cls': Llama_2, 'config': {'model_name': "meta-llama/Llama-2-7b-chat-hf"}},
-          'flan_t5_xl': {'cls': Flan_T5, 'config': {'model_name': "google/flan-t5-xl"}},
-          'flan_t5': {'cls': Flan_T5, 'config': {'model_name': "google/flan-t5-large"}}}
 
 
 def parse_args():
@@ -41,7 +37,7 @@ if __name__ == '__main__':
     del subset_indices
 
     # Load model
-    cls, config = CONFIG[args.model].values()
+    cls, config = SUMMARY_MODEL_CONFIG[args.model].values()
     config['device'] = device
     LLM = cls(**config)
 
