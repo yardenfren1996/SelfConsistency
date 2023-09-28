@@ -30,7 +30,9 @@ def main():
         args = parse_args()
         num_gpus = 8 if args.model == 'flan_t5' else 1
         dataset = datasets.load_dataset(args.dataset, split='test', cache_dir='./data')
-        chunk_ranges = utils.split_dataset(dataset_size=len(dataset), num_chunks=args.number_of_jobs)
+        # TODO: Temp rerunning of tasks stopped in the middle. Delete:
+        # chunk_ranges = utils.split_dataset(dataset_size=len(dataset), num_chunks=args.number_of_jobs)
+        chunk_ranges = [(1026, 2042), (2042, 3778), (5279, 6479), (6479, 7556), (9032, 10200), (10200, 11334)]
         # Loop through the job parameters and submit sbatch commands
         for batch_num, (start_idx, end_idx) in enumerate(chunk_ranges):
             # if batch_num not in [2, 4, 6]:
